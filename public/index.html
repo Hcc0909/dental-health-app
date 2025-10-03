@@ -8,7 +8,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-    <!-- Script de Cloudinary para el Widget de Carga -->
     <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -109,7 +108,7 @@
                         </div>
                     </form>
                 </div>
-                
+
                 <div class="bg-white p-6 rounded-xl shadow-md">
                     <div id="calendar-header" class="flex justify-between items-center mb-4">
                         <button id="prev-month-btn" class="p-2 rounded-full hover:bg-slate-200"><i data-lucide="chevron-left"></i></button>
@@ -221,16 +220,16 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, setDoc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfig = {
-        apiKey: "AIzaSyBE7-GMIloH-SRJNIchtYh3ouI589_B508",
-        authDomain: "clinicas-16ab1.firebaseapp.com",
-        projectId: "clinicas-16ab1",
-        storageBucket: "clinicas-16ab1.firebasestorage.app",
-        messagingSenderId: "563780700167",
-        appId: "1:563780700167:web:1f04058e4b06ae18bf02a2",
-        measurementId: "G-TRT1DWPKGQ"
+            apiKey: "AIzaSyBE7-GMIloH-SRJNIchtYh3ouI589_B508",
+            authDomain: "clinicas-16ab1.firebaseapp.com",
+            projectId: "clinicas-16ab1",
+            storageBucket: "clinicas-16ab1.firebasestorage.app",
+            messagingSenderId: "563780700167",
+            appId: "1:563780700167:web:1f04058e4b06ae18bf02a2",
+            measurementId: "G-TRT1DWPKGQ"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -239,6 +238,7 @@
         
         document.getElementById('project-id-display').textContent = firebaseConfig.projectId;
 
+        // --- Definimos variables globales que se inicializarán después del login
         let appointmentsCol;
         let patientsCol;
         let settingsCol;
@@ -254,6 +254,22 @@
         const patientDatalist = document.getElementById('patient-list');
         const dailyAppointmentsList = document.getElementById('daily-appointments-list');
         
+        // --- Añadir botón de Cerrar Sesión ---
+        const navConfigLink = document.getElementById('nav-config').parentElement;
+        const logoutLi = document.createElement('li');
+        logoutLi.innerHTML = `<a href="#" id="nav-logout" class="nav-link flex items-center space-x-3 p-3 rounded-lg text-slate-700 font-medium hover:bg-slate-200"><i data-lucide="log-out"></i><span>Cerrar Sesión</span></a>`;
+        navConfigLink.parentElement.appendChild(logoutLi);
+        
+        document.getElementById('nav-logout').addEventListener('click', (e) => {
+            e.preventDefault();
+            signOut(auth).then(() => {
+                console.log('Sesión cerrada');
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error('Error al cerrar sesión:', error);
+            });
+        });
+
         function switchView(viewId) {
             views.forEach(view => view.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
@@ -340,8 +356,6 @@
             const patientId = patientIdInput.value;
             const patientData = { name, phone, history };
             
-            console.log("Intentando guardar:", patientData);
-
             try {
                 if(patientId) {
                     await setDoc(doc(db, patientsCol.path, patientId), patientData);
@@ -697,29 +711,35 @@
             saveLogoUrlToFirestore(defaultLogo);
         });
 
-        window.onload = async () => {
+        window.onload = () => {
             lucide.createIcons();
-            try {
-                await signInAnonymously(auth);
-                
-                patientsCol = collection(db, 'pacientes');
-                appointmentsCol = collection(db, 'citas');
-                settingsCol = collection(db, 'settings');
-                
-                loadPatients();
-                loadAppointments();
-                loadLogoFromFirestore();
-                
-                switchView('agenda-view');
-                document.getElementById('appointment-date').valueAsDate = new Date();
-                
-            } catch (error) {
-                console.error("Error de autenticación o inicialización:", error);
-                document.body.innerHTML = `<div class="p-8"><div class="text-center p-8 text-red-600 bg-red-100 rounded-lg"><h2>Error de Conexión</h2><p>No se pudo conectar con la base de datos.</p><p class="mt-4 text-sm text-slate-600">Por favor, verifica lo siguiente:</p><ul class="text-left text-sm text-slate-500 list-disc list-inside mt-2"><li>Que la configuración de Firebase en el archivo HTML sea correcta.</li><li>Que hayas habilitado la <strong>Cloud Firestore API</strong> y la <strong>Identity Toolkit API</strong> en Google Cloud.</li><li>Que las reglas de seguridad de Firestore permitan la lectura/escritura (modo de prueba).</li></ul></div></div>`;
-            }
+            
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // El usuario ha iniciado sesión.
+                    console.log("Usuario autenticado:", user.uid);
+                    document.body.style.display = 'block'; // Muestra el contenido de la app
+
+                    // Inicializar colecciones de Firestore
+                    patientsCol = collection(db, 'pacientes');
+                    appointmentsCol = collection(db, 'citas');
+                    settingsCol = collection(db, 'settings');
+                    
+                    // Cargar datos
+                    loadPatients();
+                    loadAppointments();
+                    loadLogoFromFirestore();
+                    
+                    switchView('agenda-view');
+                    document.getElementById('appointment-date').valueAsDate = new Date();
+                    
+                } else {
+                    // El usuario no ha iniciado sesión. Redirigir a login.html
+                    console.log("Usuario no autenticado. Redirigiendo a login...");
+                    window.location.href = 'login.html';
+                }
+            });
         };
     </script>
 </body>
 </html>
-
-

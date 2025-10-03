@@ -112,12 +112,6 @@
 
     .foot{ color:var(--muted); text-align:center; font-size:.95rem }
 
-    /* 2FA modal */
-    dialog{ border:none; border-radius: 18px; max-width: 520px; width: calc(100% - 32px); background: var(--card); color:var(--text); box-shadow: var(--shadow); }
-    dialog::backdrop{ background: rgba(5,10,20,.65); backdrop-filter: blur(3px) }
-    .otp{ display:grid; grid-template-columns: repeat(6, 1fr); gap:10px; margin: 8px 0 16px }
-    .otp input{ text-align:center; font-size:1.25rem; padding:12px 0 }
-
     /* Motion */
     @media (prefers-reduced-motion:no-preference){
       .card{ animation: pop .35s ease-out }
@@ -132,7 +126,6 @@
 </head>
 <body>
   <main class="grid" aria-label="Acceso al sistema del consultorio dental">
-    <!-- Lado visual / beneficios -->
     <aside class="brand" aria-hidden="true">
       <div class="brand-card">
         <div class="tooth"></div>
@@ -146,34 +139,28 @@
               </div>
               <span>Consultorio Dental</span>
             </div>
-            <p class="slogan">Agenda, expedientes y recordatorios en un solo lugar. Seguridad clínica de nivel empresarial.</p>
+            <p class="slogan">Agenda, expedientes y recordatorios en un solo lugar.</p>
           </div>
           <div class="benefits">
-            <div class="benefit">✔️ Cumplimiento: control de acceso por rol (recepción, odontólogo, administrador).</div>
-            <div class="benefit">✔️ Seguridad: 2FA opcional y bloqueo por intentos fallidos.</div>
-            <div class="benefit">✔️ Flujo rápido: recordar dispositivo y autocompletar seguro.</div>
+            <div class="benefit">✔️ Gestión centralizada de citas y pacientes.</div>
+            <div class="benefit">✔️ Acceso seguro desde cualquier dispositivo.</div>
+            <div class="benefit">✔️ Optimiza el flujo de trabajo de tu clínica.</div>
           </div>
         </div>
       </div>
     </aside>
 
-    <!-- Tarjeta de autenticación -->
     <section class="auth">
       <div class="card" role="region" aria-labelledby="t-auth">
         <div class="card-head">
           <h1 id="t-auth" style="margin:0 0 12px 0; font-size:1.6rem">Inicia sesión</h1>
-          <div class="tabs" role="tablist" aria-label="Tipos de inicio de sesión">
-            <button class="tab" role="tab" aria-selected="true" id="tab-email" aria-controls="panel-email">Correo</button>
-            <button class="tab" role="tab" aria-selected="false" id="tab-phone" aria-controls="panel-phone">Teléfono</button>
-          </div>
         </div>
         <div class="card-body">
-          <!-- Panel: Correo -->
           <form id="form-email" role="tabpanel" aria-labelledby="tab-email" autocomplete="on" novalidate>
             <div class="field">
               <label for="email">Correo electrónico</label>
               <div class="control">
-                <input id="email" name="email" type="email" inputmode="email" placeholder="tupaciente@ejemplo.com" required aria-describedby="email-err" />
+                <input id="email" name="email" type="email" inputmode="email" placeholder="admin@ejemplo.com" required aria-describedby="email-err" />
               </div>
               <div id="email-err" class="msg" aria-live="polite"></div>
             </div>
@@ -190,236 +177,116 @@
               <div id="pass-err" class="msg" aria-live="polite"></div>
             </div>
 
-            <div class="row">
-              <label class="checkbox">
-                <input type="checkbox" id="remember" name="remember" />
-                <span>Recordar este dispositivo</span>
-              </label>
-              <a href="/recuperar" class="link">¿Olvidaste tu contraseña?</a>
-            </div>
-
             <button id="btn-login" class="btn btn-primary" type="submit">
               <span id="btn-text">Entrar</span>
               <span id="btn-spinner" class="sr-only" aria-hidden="true">⏳</span>
             </button>
 
-            <div id="form-error" class="msg error" aria-live="assertive" style="display:none"></div>
-
-            <div class="divider" style="margin:10px 0 6px">o continúa con</div>
-            <div class="providers">
-              <button type="button" class="btn btn-ghost" id="btn-google" aria-label="Entrar con Google">Google</button>
-              <button type="button" class="btn btn-ghost" id="btn-microsoft" aria-label="Entrar con Microsoft">Microsoft</button>
-            </div>
+            <div id="form-error" class="msg error" aria-live="assertive" style="display:none; margin-top: 10px;"></div>
           </form>
-
-          <!-- Panel: Teléfono -->
-          <form id="form-phone" role="tabpanel" aria-labelledby="tab-phone" hidden novalidate>
-            <div class="field">
-              <label for="phone">Número de teléfono</label>
-              <div class="control">
-                <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="+52 1 555 123 4567" required aria-describedby="phone-err" />
-              </div>
-              <div id="phone-err" class="msg" aria-live="polite"></div>
-            </div>
-            <button id="btn-login-phone" class="btn btn-primary" type="submit">Enviar código</button>
-            <div id="form-error-phone" class="msg error" aria-live="assertive" style="display:none"></div>
-          </form>
-
-          <p class="foot">¿No tienes cuenta? <a class="link" href="/registro">Crear cuenta</a></p>
         </div>
       </div>
     </section>
 
-    <!-- Modal 2FA -->
-    <dialog id="modal-2fa" aria-labelledby="t-2fa">
-      <form id="form-2fa" method="dialog">
-        <div style="padding:22px 22px 10px 22px">
-          <h2 id="t-2fa" style="margin:0 0 6px 0">Verificación en dos pasos</h2>
-          <p class="msg">Ingresa el código de 6 dígitos enviado a tu correo o teléfono.</p>
-          <div class="otp">
-            <input inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="1" required aria-label="Código 1" />
-            <input inputmode="numeric" pattern="[0-9]*" maxlength="1" required aria-label="Código 2" />
-            <input inputmode="numeric" pattern="[0-9]*" maxlength="1" required aria-label="Código 3" />
-            <input inputmode="numeric" pattern="[0-9]*" maxlength="1" required aria-label="Código 4" />
-            <input inputmode="numeric" pattern="[0-9]*" maxlength="1" required aria-label="Código 5" />
-            <input inputmode="numeric" pattern="[0-9]*" maxlength="1" required aria-label="Código 6" />
-          </div>
-          <div class="row">
-            <button class="btn btn-ghost" value="cancel">Cancelar</button>
-            <button class="btn btn-primary" id="btn-verify" value="default">Verificar</button>
-          </div>
-          <div id="otp-error" class="msg error" aria-live="assertive" style="display:none"></div>
-        </div>
-      </form>
-    </dialog>
   </main>
 
-  <script>
-    // Utilidades
+  <script type="module">
+    // --- Importar Firebase ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    // --- Configuración de Firebase ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBE7-GMIloH-SRJNIchtYh3ouI589_B508",
+      authDomain: "clinicas-16ab1.firebaseapp.com",
+      projectId: "clinicas-16ab1",
+      storageBucket: "clinicas-16ab1.firebasestorage.app",
+      messagingSenderId: "563780700167",
+      appId: "1:563780700167:web:1f04058e4b06ae18bf02a2",
+      measurementId: "G-TRT1DWPKGQ"
+    };
+
+    // --- Inicializar Firebase ---
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // --- Utilidades del DOM ---
     const $ = (s, r = document) => r.querySelector(s);
-    const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-
-    // Tabs básicas
-    const tabs = $$('.tab');
-    const panels = ['panel-email','panel-phone'];
-    tabs.forEach(tab => tab.addEventListener('click', () => {
-      tabs.forEach(t => t.setAttribute('aria-selected', t === tab ? 'true' : 'false'));
-      $('#form-email').hidden = tab.id !== 'tab-email';
-      $('#form-phone').hidden = tab.id !== 'tab-phone';
-    }));
-
-    // Mostrar/ocultar contraseña
+    
+    // --- Lógica para la UI ---
     $('#toggle-pass').addEventListener('click', () => {
       const input = $('#password');
       input.type = input.type === 'password' ? 'text' : 'password';
     });
 
-    // Caps Lock detection
     const caps = $('#caps-note');
-    $('#password').addEventListener('keydown', e => {
-      if (e.getModifierState && e.getModifierState('CapsLock')) caps.classList.add('on');
-      else caps.classList.remove('on');
+    $('#password').addEventListener('keyup', e => {
+      if (e.getModifierState && e.getModifierState('CapsLock')) {
+        caps.classList.add('on');
+      } else {
+        caps.classList.remove('on');
+      }
     });
-
-    // Recordar email localmente (si el usuario lo desea)
-    const rememberKey = 'dental.login.email';
-    const savedEmail = localStorage.getItem(rememberKey);
-    if (savedEmail) {
-      $('#email').value = savedEmail;
-      $('#remember').checked = true;
+    
+    function showErr(id, msg) { 
+        const el = $(id); 
+        if(!el) return; 
+        el.textContent = msg || ''; 
+        el.style.display = msg ? 'flex' : 'none'; 
     }
 
-    function showErr(id, msg){ const el = $(id); if(!el) return; el.textContent = msg || ''; el.style.display = msg ? 'flex' : 'none'; }
+    // Verificar si el usuario ya está logueado
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // Si ya hay una sesión activa, redirigir al panel principal
+            console.log("Sesión activa, redirigiendo al panel...");
+            window.location.href = 'index.html';
+        }
+    });
 
-    // Validación simple de email
-    function isEmail(v){ return /.+@.+\..+/.test(v); }
-    
-    // Submit correo + pass
+    // --- Lógica del formulario de login ---
     $('#form-email').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = $('#email').value.trim();
       const password = $('#password').value;
-      const remember = $('#remember').checked;
-
+      
       let ok = true;
-      if (!isEmail(email)) { showErr('#email-err', 'Ingresa un correo válido.'); ok = false; }
-      else showErr('#email-err');
-      if (!password || password.length < 6) { showErr('#pass-err', 'Tu contraseña debe tener al menos 6 caracteres.'); ok = false; }
-      else showErr('#pass-err');
+      if (!/.+@.+\..+/.test(email)) { showErr('#email-err', 'Ingresa un correo válido.'); ok = false; } 
+      else { showErr('#email-err'); }
+      if (!password || password.length < 6) { showErr('#pass-err', 'La contraseña debe tener al menos 6 caracteres.'); ok = false; } 
+      else { showErr('#pass-err'); }
       if (!ok) return;
 
-      // Guardar email si el usuario lo pidió
-      if (remember) localStorage.setItem(rememberKey, email); else localStorage.removeItem(rememberKey);
-
-      // UI estado cargando
+      // Estado de carga en el botón
       const btn = $('#btn-login');
       const text = $('#btn-text');
       const spinner = $('#btn-spinner');
-      btn.disabled = true; text.textContent = 'Entrando…'; spinner.classList.remove('sr-only');
+      btn.disabled = true; 
+      text.textContent = 'Entrando…'; 
+      spinner.classList.remove('sr-only');
+      showErr('#form-error'); // Ocultar errores previos
 
-      try{
-        const res = await fetch('/api/auth/login', {
-          method:'POST', headers:{
-            'Content-Type':'application/json',
-            'X-CSRF-Token': $('meta[name="csrf-token"]').content || ''
-          },
-          body: JSON.stringify({ email, password, remember })
-        });
-        const data = await res.json().catch(()=> ({}));
-
-        if (!res.ok) {
-          showErr('#form-error', data.message || 'No pudimos iniciar sesión. Revisa tus datos.');
-          return;
+      try {
+        // Iniciar sesión con Firebase
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log('Inicio de sesión exitoso:', userCredential.user.uid);
+        // Redirección al panel de administración
+        window.location.href = 'index.html';
+      } catch (error) {
+        console.error("Error de inicio de sesión:", error.code, error.message);
+        let message = 'No se pudo iniciar sesión. Revisa tus datos.';
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+            message = 'Correo o contraseña incorrectos.';
         }
-
-        // Si el backend indica que requiere 2FA
-        if (data.requires2FA) {
-          const dialog = $('#modal-2fa');
-          dialog.returnValue = '';
-          dialog.showModal();
-          const inputs = $$('.otp input', dialog);
-          inputs[0].focus();
-          inputs.forEach((inp, i) => {
-            inp.addEventListener('input', () => { if (inp.value && i < inputs.length - 1) inputs[i+1].focus(); });
-            inp.addEventListener('keydown', ev => { if (ev.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus(); });
-          });
-
-          $('#form-2fa').addEventListener('submit', async (ev) => {
-            ev.preventDefault();
-            const code = inputs.map(i => i.value).join('');
-            if (code.length !== 6) { showErr('#otp-error', 'Código incompleto.'); return; }
-            showErr('#otp-error');
-
-            const vRes = await fetch('/api/auth/verify-2fa', {
-              method:'POST', headers:{ 'Content-Type':'application/json' },
-              body: JSON.stringify({ email, code })
-            });
-            const vData = await vRes.json().catch(()=> ({}));
-            if (!vRes.ok) { showErr('#otp-error', vData.message || 'Código incorrecto.'); return; }
-
-            dialog.close('ok');
-            window.location.assign(data.redirect || '/dashboard');
-          }, { once:true });
-
-          dialog.addEventListener('close', () => {
-            if (dialog.returnValue !== 'ok') {
-              // Si cierra sin validar, re-habilitamos el botón
-              btn.disabled = false; text.textContent = 'Entrar'; spinner.classList.add('sr-only');
-            }
-          }, { once:true });
-
-        } else {
-          window.location.assign(data.redirect || '/dashboard');
-        }
-      } catch(err){
-        console.error(err);
-        showErr('#form-error', 'Error de red. Intenta de nuevo.');
+        showErr('#form-error', message);
       } finally {
-        // Si no hubo redirección ni 2FA, re-habilitar
-        const stillHere = !document.hidden && !$('#modal-2fa').open;
-        if (stillHere){ $('#btn-login').disabled = false; $('#btn-text').textContent = 'Entrar'; $('#btn-spinner').classList.add('sr-only'); }
+        // Restaurar el botón a su estado normal
+        btn.disabled = false; 
+        text.textContent = 'Entrar'; 
+        spinner.classList.add('sr-only');
       }
     });
 
-    // Inicio por teléfono (solicita OTP por SMS)
-    $('#form-phone').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const phone = $('#phone').value.trim();
-      if (!/^[+]?\d[\d\s-]{7,}$/.test(phone)) { showErr('#phone-err', 'Número no válido.'); return; }
-      showErr('#phone-err');
-
-      const btn = $('#btn-login-phone'); btn.disabled = true; btn.textContent = 'Enviando…';
-      try{
-        const res = await fetch('/api/auth/sms/start', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ phone }) });
-        const data = await res.json().catch(()=> ({}));
-        if (!res.ok){ showErr('#form-error-phone', data.message || 'No se pudo enviar el código.'); return; }
-        // Reusar modal 2FA para OTP de SMS
-        const dialog = $('#modal-2fa'); dialog.returnValue = '';
-        $('#t-2fa').textContent = 'Código SMS';
-        dialog.showModal();
-        const inputs = $$('.otp input', dialog); inputs.forEach(i=> i.value=''); inputs[0].focus();
-        $('#form-2fa').addEventListener('submit', async (ev) => {
-          ev.preventDefault();
-          const code = inputs.map(i => i.value).join('');
-          if (code.length !== 6) { showErr('#otp-error', 'Código incompleto.'); return; }
-          showErr('#otp-error');
-
-          const vRes = await fetch('/api/auth/sms/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ phone, code }) });
-          const vData = await vRes.json().catch(()=> ({}));
-          if (!vRes.ok){ showErr('#otp-error', vData.message || 'Código inválido.'); return; }
-          dialog.close('ok');
-          window.location.assign(vData.redirect || '/dashboard');
-        }, { once:true });
-      }catch(err){
-        console.error(err); showErr('#form-error-phone', 'Error de red.');
-      }finally{
-        btn.disabled = false; btn.textContent = 'Enviar código';
-      }
-    });
-
-    // Botones de proveedores (placeholders)
-    $('#btn-google').addEventListener('click', ()=> window.location.assign('/api/auth/google'));
-    $('#btn-microsoft').addEventListener('click', ()=> window.location.assign('/api/auth/microsoft'));
   </script>
 </body>
 </html>
