@@ -1,125 +1,630 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agenda de Citas - Dental Health</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;font-family:'Poppins',sans-serif;}
-    body{
-      background:linear-gradient(135deg,#4facfe,#00f2fe);
-      min-height:100vh;display:flex;justify-content:center;align-items:center;
-    }
-    .container{
-      background:#fff;padding:30px;border-radius:16px;
-      box-shadow:0 10px 35px rgba(0,0,0,0.15);
-      max-width:500px;width:100%;
-    }
-    h1{text-align:center;margin-bottom:20px;color:#333;}
-    form{display:grid;gap:15px;}
-    label{font-weight:600;color:#444;}
-    input,textarea,button{
-      padding:12px;border-radius:10px;border:1px solid #ccc;
-      font-size:1rem;width:100%;
-    }
-    textarea{resize:none;min-height:80px;}
-    button{
-      background:#4facfe;border:none;color:white;
-      font-weight:600;cursor:pointer;transition:0.3s;
-    }
-    button:hover{background:#00c6fb;}
-    .success,.error{
-      display:none;margin-top:15px;padding:12px;border-radius:10px;text-align:center;font-size:0.95rem;
-    }
-    .success{background:#d4edda;color:#155724;border:1px solid #c3e6cb;}
-    .error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb;}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda tu Cita - Dental Health</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2kT4fNFCEX5/vM9AtsE3s+f7uLZpW+wQ20+kA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Variables CSS para una gestión de colores más sencilla */
+        :root {
+            --primary-color: #4CAF50; /* Un verde fresco y profesional */
+            --primary-dark: #388E3C;
+            --secondary-color: #607D8B; /* Gris azulado neutro */
+            --background-gradient: linear-gradient(135deg, #e0f2f7, #bbdefb); /* Degradado suave */
+            --card-background: #ffffff;
+            --text-color: #333333;
+            --light-text-color: #666666;
+            --border-color: #e0e0e0;
+            --input-focus-border: #4CAF50;
+            --button-hover-bg: linear-gradient(135deg, #388E3C, #4CAF50);
+            --success-bg: #e8f5e9;
+            --success-text: #2e7d32;
+            --error-bg: #ffebee;
+            --error-text: #c62828;
+            --info-bg: #e3f2fd;
+            --info-text: #1565c0;
+            --transition-speed: 0.3s;
+        }
+
+        /* Estilos Generales */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--background-gradient);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--text-color);
+        }
+
+        .card {
+            background: var(--card-background);
+            border-radius: 18px; /* Bordes más suaves */
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada pero difuminada */
+            max-width: 700px; /* Ancho optimizado */
+            width: 100%;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out; /* Animación más rápida */
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: var(--primary-color); /* Color primario para el header */
+            color: #fff;
+            padding: 35px 25px; /* Más padding */
+            text-align: center;
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+            position: relative;
+        }
+        
+        header::before { /* Elemento decorativo */
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+        }
+
+        header h1 {
+            font-size: 2.2rem; /* Título más grande */
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1rem;
+            opacity: 0.95;
+            font-weight: 400;
+        }
+
+        .content {
+            padding: 30px;
+            flex-grow: 1; /* Para que el contenido ocupe el espacio restante */
+        }
+
+        form {
+            display: grid;
+            gap: 18px; /* Espaciado ajustado */
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--light-text-color);
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 14px 18px; /* Más padding para inputs */
+            border-radius: 10px; /* Bordes más suaves */
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+            color: var(--text-color);
+            transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+            background-color: #fcfcfc;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--input-focus-border);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2); /* Sombra de foco más suave */
+            background-color: #ffffff;
+        }
+
+        textarea {
+            min-height: 120px; /* Altura un poco mayor */
+            resize: vertical; /* Permitir redimensionar solo verticalmente */
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 25px; /* Más padding */
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: var(--transition-speed) ease-in-out;
+            margin-top: 15px;
+            display: flex; /* Para centrar el ícono */
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            background: var(--button-hover-bg);
+            transform: translateY(-2px); /* Pequeño efecto de levantamiento */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Mensajes */
+        .message {
+            display: none;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+            margin-top: 25px; /* Más espacio */
+            font-size: 0.95rem;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .success {
+            background: var(--success-bg);
+            color: var(--success-text);
+            border-color: #a5d6a7;
+        }
+
+        .error {
+            background: var(--error-bg);
+            color: var(--error-text);
+            border-color: #ef9a9a;
+        }
+
+        .info {
+            background: var(--info-bg);
+            color: var(--info-text);
+            border-color: #90caf9;
+        }
+
+        .message i {
+            font-size: 1.2rem;
+        }
+
+        footer {
+            background: #f8f8f8;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.85rem;
+            color: var(--light-text-color);
+            border-bottom-left-radius: 18px;
+            border-bottom-right-radius: 18px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estilos para el Selector de Paciente (tipo Tab) */
+        .client-toggle {
+            display: flex;
+            background: #f0f4f8;
+            padding: 6px;
+            border-radius: 12px; /* Bordes más redondeados */
+            margin-bottom: 30px; /* Más espacio inferior */
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.08); /* Sombra inset más sutil */
+            font-weight: 500;
+            position: relative;
+        }
+
+        .client-toggle .toggle-label {
+            color: var(--light-text-color);
+            cursor: pointer;
+            padding: 12px 20px; /* Más padding para que se vea como un botón */
+            border-radius: 10px;
+            transition: all var(--transition-speed) ease;
+            flex-grow: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            user-select: none;
+            font-size: 0.95rem;
+        }
+
+        .client-toggle input[type="radio"] {
+            display: none;
+        }
+        
+        /* Indicador de selección (falso botón) */
+        .toggle-indicator {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            height: calc(100% - 12px);
+            width: calc(50% - 6px);
+            background: var(--card-background);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            transition: transform var(--transition-speed) ease-in-out;
+            z-index: 0;
+        }
+
+        #toggleNew:checked ~ .toggle-indicator {
+            transform: translateX(0);
+        }
+
+        #toggleExisting:checked ~ .toggle-indicator {
+            transform: translateX(calc(100% + 0px)); /* Ajuste para el desplazamiento */
+        }
+        
+        #toggleNew:checked ~ .toggle-label[for="toggleNew"] {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        #toggleExisting:checked ~ .toggle-label[for="toggleExisting"] {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* Contenedores de formulario */
+        .new-client-fields, .existing-client-fields {
+            display: grid;
+            gap: 18px;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        
+        /* Estilo para el campo de teléfono del paciente existente */
+        #telefono {
+            font-weight: 600;
+            color: var(--primary-dark);
+            letter-spacing: 0.5px;
+        }
+
+        /* Responsividad básica */
+        @media (max-width: 600px) {
+            .card {
+                margin: 0 15px;
+            }
+            header h1 {
+                font-size: 1.8rem;
+            }
+            .content {
+                padding: 20px;
+            }
+            .client-toggle .toggle-label {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+            button {
+                font-size: 1rem;
+                padding: 12px 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📅 Agenda tu Cita</h1>
-    <form id="formCita">
-      <div>
-        <label for="nombre">Nombre completo</label>
-        <input type="text" id="nombre" required placeholder="Escribe tu nombre">
-      </div>
-      <div>
-        <label for="email">Correo electrónico</label>
-        <input type="email" id="email" required placeholder="ejemplo@correo.com">
-      </div>
-      <div>
-        <label for="fecha">Fecha</label>
-        <input type="date" id="fecha" required>
-      </div>
-      <div>
-        <label for="hora">Hora</label>
-        <input type="time" id="hora" required>
-      </div>
-      <div>
-        <label for="motivo">Motivo de la cita</label>
-        <textarea id="motivo" placeholder="Describe el motivo de tu cita"></textarea>
-      </div>
-      <button type="submit">Agendar Cita</button>
-    </form>
-    <div class="success" id="successMsg">✅ Tu cita ha sido agendada con éxito.</div>
-    <div class="error" id="errorMsg">❌ Ocurrió un error al guardar la cita.</div>
-  </div>
+    <div class="card">
+        <header>
+            <h1><i class="fas fa-calendar-check"></i> Agenda tu Cita</h1>
+            <p>El primer paso hacia tu mejor sonrisa</p>
+        </header>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    // Importar Firebase SDK
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+        <div class="content">
+            <div class="client-toggle">
+                <input type="radio" id="toggleNew" name="clientType" value="new" checked>
+                <label for="toggleNew" class="toggle-label"><i class="fas fa-user-plus"></i> Paciente Nuevo</label>
 
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyBfpPW6aXJBLmAjeYD4rRQQpehPmv9n9zE",
-      authDomain: "dental-health-app-85d74.firebaseapp.com",
-      projectId: "dental-health-app-85d74",
-      storageBucket: "dental-health-app-85d74.firebasestorage.app",
-      messagingSenderId: "941842622103",
-      appId: "1:941842622103:web:7a423f9edc7e19d1972bd2",
-      measurementId: "G-QP4FVGVT19"
-    };
+                <input type="radio" id="toggleExisting" name="clientType" value="existing">
+                <label for="toggleExisting" class="toggle-label"><i class="fas fa-user-check"></i> Ya soy paciente</label>
+                <div class="toggle-indicator"></div>
+            </div>
 
-    // Inicializar Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+            <form id="formCita">
+                <div class="existing-client-fields" style="display: none;">
+                    <div class="form-group">
+                        <label for="telefono"><i class="fas fa-phone-alt"></i> Número de teléfono</label>
+                        <input type="tel" id="telefono" placeholder="Ej: 6870000000" required>
+                        <small id="client-status" class="message info" style="display:none; margin-top: 10px;"></small>
+                    </div>
+                    <input type="hidden" id="nombreExistente">
+                    <input type="hidden" id="emailExistente">
+                </div>
 
-    // Capturar formulario
-    const form = document.getElementById("formCita");
-    const successMsg = document.getElementById("successMsg");
-    const errorMsg = document.getElementById("errorMsg");
+                <div class="new-client-fields">
+                    <div class="form-group">
+                        <label for="nombre"><i class="fas fa-user"></i> Nombre completo</label>
+                        <input type="text" id="nombre" placeholder="Ej: Juan Pérez" required>
+                    </div>
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+                    <div class="form-group">
+                        <label for="email"><i class="fas fa-envelope"></i> Correo electrónico</label>
+                        <input type="email" id="email" placeholder="ejemplo@correo.com" required>
+                    </div>
 
-      const nombre = document.getElementById("nombre").value;
-      const email = document.getElementById("email").value;
-      const fecha = document.getElementById("fecha").value;
-      const hora = document.getElementById("hora").value;
-      const motivo = document.getElementById("motivo").value;
+                    <div class="form-group">
+                        <label for="telefonoNuevo"><i class="fas fa-phone-alt"></i> Número de teléfono</label>
+                        <input type="tel" id="telefonoNuevo" placeholder="Ej: 6870000000" required>
+                    </div>
+                </div>
 
-      try {
-        await addDoc(collection(db, "citas"), {
-          nombre,
-          email,
-          fecha,
-          hora,
-          motivo,
-          creado: new Date()
+                <div class="form-group">
+                    <label for="fecha"><i class="fas fa-calendar-alt"></i> Fecha</label>
+                    <input type="date" id="fecha" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="hora"><i class="fas fa-clock"></i> Hora</label>
+                    <input type="time" id="hora" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="servicio"><i class="fas fa-tooth"></i> Servicio/Motivo Principal</label>
+                    <select id="servicio" required>
+                        <option value="" disabled selected>Selecciona un servicio</option>
+                        <option value="Limpieza">Limpieza Dental Profesional</option>
+                        <option value="Revision">Revisión y Consulta General</option>
+                        <option value="Emergencia">Emergencia/Dolor de Muela</option>
+                        <option value="Ortodoncia">Consulta de Ortodoncia</option>
+                        <option value="Otro">Otro (Especificar en Detalles)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="motivo"><i class="fas fa-comment-dots"></i> Detalles adicionales</label>
+                    <textarea id="motivo" placeholder="Cualquier síntoma o detalle que debamos saber. (Opcional)"></textarea>
+                </div>
+
+                <button type="submit" id="submitButton"><i class="fas fa-calendar-plus"></i> Agendar Cita</button>
+            </form>
+
+            <div class="message success" id="successMsg"><i class="fas fa-check-circle"></i> ¡Listo! Tu cita ha sido agendada con éxito.</div>
+            <div class="message error" id="errorMsg"><i class="fas fa-times-circle"></i> Ocurrió un error al guardar la cita. Por favor, intenta de nuevo o llámanos.</div>
+        </div>
+
+        <footer>
+            Dental Health © 2025 | Todos los derechos reservados
+        </footer>
+    </div>
+
+    <script type="module">
+        // Importaciones de Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+        // --- TU Configuración Firebase ACTUALIZADA ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBE7-GMIloH-SRJNIchtYh3ouI589_B508",
+            authDomain: "clinicas-16ab1.firebaseapp.com",
+            projectId: "clinicas-16ab1",
+            storageBucket: "clinicas-16ab1.firebasestorage.app",
+            messagingSenderId: "563780700167",
+            appId: "1:563780700167:web:1f04058e4b06ae18bf02a2",
+            measurementId: "G-TRT1DWPKGQ"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        // -------------------------------------------------------------
+
+        // Elementos del DOM
+        const form = document.getElementById("formCita");
+        const successMsg = document.getElementById("successMsg");
+        const errorMsg = document.getElementById("errorMsg");
+        const newClientFields = document.querySelector(".new-client-fields");
+        const existingClientFields = document.querySelector(".existing-client-fields");
+        const toggleNew = document.getElementById("toggleNew");
+        const toggleExisting = document.getElementById("toggleExisting");
+        const inputTelefono = document.getElementById("telefono");
+        const inputTelefonoNuevo = document.getElementById("telefonoNuevo");
+        const inputNombre = document.getElementById("nombre");
+        const inputEmail = document.getElementById("email");
+        const inputNombreExistente = document.getElementById("nombreExistente");
+        const inputEmailExistente = document.getElementById("emailExistente");
+        const clientStatus = document.getElementById("client-status");
+        const submitButton = document.getElementById("submitButton");
+
+        // Estado
+        let isExistingClient = false;
+        let clientData = null; 
+        let clientDocId = null; 
+
+        // --- 1. Lógica de Alternar Formularios ---
+        function toggleForm() {
+            isExistingClient = toggleExisting.checked;
+
+            clientStatus.style.display = 'none';
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            form.reset(); 
+
+            if (isExistingClient) {
+                // Modo Paciente Existente
+                newClientFields.style.display = 'none';
+                existingClientFields.style.display = 'grid';
+
+                inputTelefono.setAttribute('required', 'required');
+                inputNombre.removeAttribute('required');
+                inputEmail.removeAttribute('required');
+                inputTelefonoNuevo.removeAttribute('required');
+
+                clientStatus.innerHTML = '<i class="fas fa-info-circle"></i> Ingresa tu número de teléfono para cargar tus datos.';
+                clientStatus.className = 'message info';
+                clientStatus.style.display = 'flex'; // Usar flex para centrar ícono y texto
+
+                submitButton.innerHTML = '<i class="fas fa-check-circle"></i> Agendar Cita (Paciente Registrado)';
+            } else {
+                // Modo Paciente Nuevo
+                newClientFields.style.display = 'grid';
+                existingClientFields.style.display = 'none'; 
+
+                inputTelefono.removeAttribute('required');
+                inputNombre.setAttribute('required', 'required');
+                inputEmail.setAttribute('required', 'required');
+                inputTelefonoNuevo.setAttribute('required', 'required');
+
+                clientData = null;
+                clientDocId = null;
+
+                submitButton.innerHTML = '<i class="fas fa-calendar-plus"></i> Agendar Nueva Cita';
+            }
+        }
+
+        toggleNew.addEventListener('change', toggleForm);
+        toggleExisting.addEventListener('change', toggleForm);
+
+
+        // --- 2. Lógica para Buscar Paciente Existente por 'phone' ---
+        async function searchClientByPhone(telefono) {
+            if (telefono.length < 10) {
+                clientStatus.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Ingresa el número de teléfono completo (10 dígitos).';
+                clientStatus.className = 'message info';
+                clientStatus.style.display = 'flex';
+                clientData = null;
+                return;
+            }
+
+            clientStatus.innerHTML = '<i class="fas fa-search"></i> Buscando paciente...';
+            clientStatus.className = 'message info';
+            clientStatus.style.display = 'flex';
+            
+            try {
+                const q = query(collection(db, "pacientes"), where("phone", "==", telefono));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const doc = querySnapshot.docs[0];
+                    clientData = doc.data();
+                    clientDocId = doc.id;
+                    
+                    const foundName = clientData.name || "Paciente"; 
+                    
+                    inputNombreExistente.value = foundName;
+                    inputEmailExistente.value = clientData.email || ""; 
+
+                    clientStatus.innerHTML = `<i class="fas fa-smile-beam"></i> ¡Bienvenido(a) ${foundName.split(' ')[0]}! Confirma tu cita.`;
+                    clientStatus.className = 'message success';
+                } else {
+                    clientStatus.innerHTML = '<i class="fas fa-user-times"></i> Paciente no encontrado. Por favor, cambia a "Paciente Nuevo" para registrarte.';
+                    clientStatus.className = 'message error';
+                    clientData = null;
+                    clientDocId = null;
+                }
+            } catch (error) {
+                console.error("Error al buscar paciente:", error);
+                clientStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error al buscar en la base de datos. Intenta más tarde.';
+                clientStatus.className = 'message error';
+            }
+        }
+
+        let typingTimer;
+        const doneTypingInterval = 800; 
+
+        inputTelefono.addEventListener('keyup', () => {
+            clearTimeout(typingTimer);
+            const telefonoValue = inputTelefono.value.trim();
+            if (telefonoValue && isExistingClient) {
+                typingTimer = setTimeout(() => {
+                    searchClientByPhone(telefonoValue);
+                }, doneTypingInterval);
+            }
         });
 
-        successMsg.style.display = "block";
-        errorMsg.style.display = "none";
-        form.reset();
-      } catch (error) {
-        console.error("Error al guardar la cita:", error);
-        successMsg.style.display = "none";
-        errorMsg.style.display = "block";
-      }
-    });
-  </script>
+
+        // --- 3. Lógica de Envío de Formulario ---
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+            let nombre, email, telefonoCita, pacienteId;
+
+            if (isExistingClient) {
+                if (!clientData || !clientDocId) {
+                    clientStatus.innerHTML = '<i class="fas fa-times-circle"></i> Por favor, verifica tu número y espera que carguen tus datos.';
+                    clientStatus.className = 'message error';
+                    clientStatus.style.display = 'flex';
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-check-circle"></i> Agendar Cita (Paciente Registrado)';
+                    return;
+                }
+                nombre = clientData.name; 
+                email = clientData.email || "No registrado";
+                telefonoCita = inputTelefono.value;
+                pacienteId = clientDocId; 
+            } else {
+                nombre = inputNombre.value;
+                email = inputEmail.value;
+                telefonoCita = inputTelefonoNuevo.value;
+                pacienteId = 'NUEVO'; 
+            }
+
+            const fecha = document.getElementById("fecha").value;
+            const hora = document.getElementById("hora").value;
+            const servicio = document.getElementById("servicio").value;
+            const motivo = document.getElementById("motivo").value;
+
+            try {
+                let finalPacienteId = pacienteId;
+                if (pacienteId === 'NUEVO') {
+                    const newPatientRef = await addDoc(collection(db, "pacientes"), {
+                        name: nombre, 
+                        email: email,
+                        phone: telefonoCita, 
+                        registrado: new Date()
+                    });
+                    finalPacienteId = newPatientRef.id;
+                }
+
+                await addDoc(collection(db, "Citas"), { 
+                    pacienteId: finalPacienteId, 
+                    nombrePaciente: nombre,
+                    emailPaciente: email,
+                    telefono: telefonoCita,
+                    fecha: fecha,
+                    hora: hora,
+                    servicio: servicio,
+                    motivo: motivo,
+                    estado: "Pendiente", 
+                    creado: new Date()
+                });
+
+                successMsg.style.display = "flex";
+                errorMsg.style.display = "none";
+                clientStatus.style.display = 'none';
+                form.reset();
+                clientData = null;
+                clientDocId = null; 
+                toggleNew.checked = true;
+                toggleForm(); 
+
+            } catch (error) {
+                console.error("Error al guardar la cita:", error);
+                successMsg.style.display = "none";
+                errorMsg.style.display = "flex";
+                errorMsg.innerHTML = `<i class="fas fa-times-circle"></i> Ocurrió un error. Detalles: ${error.message}`;
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = isExistingClient ? '<i class="fas fa-check-circle"></i> Agendar Cita (Paciente Registrado)' : '<i class="fas fa-calendar-plus"></i> Agendar Nueva Cita';
+            }
+        });
+
+        // Inicializar el formulario al cargar
+        document.addEventListener('DOMContentLoaded', toggleForm);
+    </script>
 </body>
 </html>

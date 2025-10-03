@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Health - Tu Consultorio Dental de Confianza</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Variables y Reset Básico */
+        :root {
+            --primary-color: #4CAF50; /* Verde Fresco */
+            --primary-light: #81C784;
+            --primary-dark: #388E3C;
+            --secondary-color: #607D8B; /* Gris Azulado */
+            --background-light: #f5f5f5;
+            --text-color: #333333;
+            --light-text-color: #666666;
+            --card-background: #ffffff;
+            --border-color: #e0e0e0;
+            --transition-speed: 0.3s;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        html { scroll-behavior: smooth; }
+        body { color: var(--text-color); line-height: 1.6; }
+
+        /* Contenedor General */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+        /* Encabezados y Tipografía */
+        h2, h3 { font-weight: 700; margin-bottom: 15px; }
+        h2 { font-size: 2.2rem; color: var(--primary-dark); }
+        h3 { font-size: 1.5rem; color: var(--secondary-color); }
+
+        /* Botones */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all var(--transition-speed);
+            border: none;
+            cursor: pointer;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* --- 1. Navegación (Header) --- */
+        nav {
+            background: var(--card-background);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+        }
+
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            text-decoration: none;
+        }
+        .logo i { color: var(--primary-color); margin-right: 5px; }
+
+        .nav-links a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 500;
+            margin-left: 30px;
+            transition: color var(--transition-speed);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+        
+        /* Ocultar botón de menú en desktop */
+        .menu-toggle { display: none; }
+
+        /* --- 2. Sección Principal (Hero) --- */
+        .hero {
+            background: var(--background-light);
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--primary-dark);
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 30px;
+            color: var(--light-text-color);
+        }
+
+        .hero .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        /* --- 3. Secciones Generales --- */
+        section { padding: 80px 0; }
+        .section-light { background: var(--card-background); }
+        .section-dark { background: var(--background-light); }
+        
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        /* Bloques de información (Sobre Nosotros, Por qué Elegirnos) */
+        .info-block {
+            padding: 30px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .info-block i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .info-block h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+
+        /* Estilos específicos para Servicios */
+        .service-card {
+            text-align: center;
+            padding: 25px;
+            border-radius: 12px;
+            background: var(--card-background);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid var(--border-color);
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.1);
+        }
+
+        .service-card i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .service-card p {
+            font-size: 0.95rem;
+            color: var(--light-text-color);
+        }
+        
+        /* --- 4. Call to Action (CTA) --- */
+        .cta {
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 60px 0;
+        }
+
+        .cta h2 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .cta .btn-primary {
+            background-color: white;
+            color: var(--primary-color);
+            box-shadow: none;
+            font-size: 1.1rem;
+        }
+        
+        .cta .btn-primary:hover {
+            background-color: var(--background-light);
+            transform: translateY(-2px);
+        }
+
+        /* --- 5. Pie de Página (Footer) --- */
+        footer {
+            background: var(--text-color);
+            color: white;
+            padding: 40px 0;
+            font-size: 0.9rem;
+        }
+
+        footer .container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .footer-col {
+            width: 30%;
+            margin-bottom: 20px;
+        }
+        
+        .footer-col:last-child { text-align: right; }
+
+        .footer-col h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        
+        .footer-col p, .footer-col a {
+            color: #ccc;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .footer-col a:hover {
+            color: var(--primary-light);
+        }
+        
+        .footer-bottom {
+            width: 100%;
+            text-align: center;
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #aaa;
+        }
+
+        /* --- Responsividad --- */
+        @media (max-width: 900px) {
+            .nav-links { display: none; }
+            .menu-toggle {
+                display: block;
+                font-size: 1.5rem;
+                cursor: pointer;
+                color: var(--primary-color);
+            }
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1rem; }
+            .hero .btn-group { flex-direction: column; gap: 10px; }
+            .footer-col { width: 100%; text-align: center; }
+            .footer-col:last-child { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="container">
+            <a href="#" class="logo"><i class="fas fa-tooth"></i> Dental Health</a>
+            
+            <div class="nav-links">
+                <a href="#inicio">Inicio</a>
+                <a href="#nosotros">Nosotros</a>
+                <a href="#servicios">Servicios</a>
+                <a href="#contacto">Contacto</a>
+            </div>
+            
+            <i class="fas fa-bars menu-toggle"></i>
+        </div>
+    </nav>
+
+    <section class="hero" id="inicio">
+        <div class="container">
+            <h1>Tu Sonrisa, Nuestra Prioridad</h1>
+            <p>Atención dental de calidad en un ambiente tranquilo y moderno. ¡Agenda tu cita hoy y empieza a disfrutar de la mejor salud bucal!</p>
+            <div class="btn-group">
+                <a href="AgendarCita.html" class="btn btn-primary"><i class="fas fa-calendar-alt"></i> Agendar Cita</a>
+                <a href="#servicios" class="btn btn-secondary"><i class="fas fa-search"></i> Ver Servicios</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-light" id="nosotros">
+        <div class="container" style="text-align: center;">
+            <h2>¿Por Qué Elegirnos?</h2>
+            <p style="margin-bottom: 40px; color: var(--light-text-color);">Comprometidos con tu bienestar, utilizamos tecnología de vanguardia y un trato humano.</p>
+            
+            <div class="grid-3">
+                <div class="info-block">
+                    <i class="fas fa-microscope"></i>
+                    <h4>Tecnología Avanzada</h4>
+                    <p>Equipos de última generación para diagnósticos precisos y tratamientos eficientes.</p>
+                </div>
+                <div class="info-block">
+                    <i class="fas fa-hands-helping"></i>
+                    <h4>Trato Humano</h4>
+                    <p>Odontólogos empáticos que te harán sentir cómodo en cada visita.</p>
+                </div>
+                <div class="info-block">
+                    <i class="fas fa-award"></i>
+                    <h4>Resultados Garantizados</h4>
+                    <p>Experiencia y profesionalismo que aseguran la excelencia en cada procedimiento.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section-dark" id="servicios">
+        <div class="container">
+            <h2 style="text-align: center;">Nuestros Servicios Principales</h2>
+            <p style="text-align: center; margin-bottom: 40px; color: var(--light-text-color);">Ofrecemos una atención integral para todas tus necesidades dentales.</p>
+
+            <div class="grid-3">
+                <div class="service-card">
+                    <i class="fas fa-hand-sparkles"></i>
+                    <h4>Limpieza y Prevención</h4>
+                    <p>Remoción de sarro, fluorización y educación para mantener tu boca sana.</p>
+                </div>
+                <div class="service-card">
+                    <i class="fas fa-fill-drip"></i>
+                    <h4>Odontología Estética</h4>
+                    <p>Blanqueamientos dentales, carillas y restauraciones para una sonrisa perfecta.</p>
+                </div>
+                <div class="service-card">
+                    <i class="fas fa-user-md"></i>
+                    <h4>Ortodoncia</h4>
+                    <p>Corrección de posición dental con brackets modernos y tratamientos invisibles.</p>
+                </div>
+                <div class="service-card">
+                    <i class="fas fa-syringe"></i>
+                    <h4>Endodoncia y Cirugía</h4>
+                    <p>Tratamiento de conducto, extracciones complejas y manejo de dolor.</p>
+                </div>
+                <div class="service-card">
+                    <i class="fas fa-crown"></i>
+                    <h4>Prótesis Fijas y Removibles</h4>
+                    <p>Rehabilitación total o parcial para recuperar funcionalidad y estética.</p>
+                </div>
+                <div class="service-card">
+                    <i class="fas fa-children"></i>
+                    <h4>Odontopediatría</h4>
+                    <p>Cuidado dental especializado para los más pequeños en un ambiente divertido.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta" id="contacto">
+        <div class="container">
+            <h2>¿Listo para Agendar tu Consulta?</h2>
+            <p style="font-size: 1.1rem; margin-bottom: 30px; opacity: 0.9;">Tu cita a un solo clic. Consulta nuestra disponibilidad y reserva tu espacio.</p>
+            <a href="AgendarCita.html" class="btn btn-primary"><i class="fas fa-calendar-check"></i> Agendar Cita Ahora</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-col">
+                <h4><i class="fas fa-tooth"></i> Dental Health</h4>
+                <p>Cuidado dental de vanguardia centrado en el paciente. Comprometidos con tu salud bucal integral.</p>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Información de Contacto</h4>
+                <p><i class="fas fa-map-marker-alt"></i> Av. Central #123, Ciudad, MX</p>
+                <p><i class="fas fa-phone"></i> +52 (55) 1234 5678</p>
+                <p><i class="fas fa-envelope"></i> contacto@dentalhealth.com</p>
+            </div>
+            
+            <div class="footer-col">
+                <h4>Enlaces Rápidos</h4>
+                <a href="#inicio">Inicio</a>
+                <a href="#servicios">Servicios</a>
+                <a href="AgendarCita.html">Agendar Cita</a>
+            </div>
+
+            <div class="footer-bottom">
+                © 2025 Dental Health | Desarrollado con ❤️ y código limpio.
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
