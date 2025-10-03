@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "dental-health-app-85d74"
-  }
+    "default": "dental-health-app-85d74",
+    "clinicas-16ab1": "clinicas-16ab1"
+  },
+  "targets": {},
+  "etags": {}
 }
