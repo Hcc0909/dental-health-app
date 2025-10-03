@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Health - Gestión de Citas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- Script de Cloudinary para el Widget de Carga -->
+    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .view { display: none; }
+        .view.active { display: block; }
+        .modal-backdrop {
+            background-color: rgba(0,0,0,0.5);
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-in-out;
+        }
+        /* Estilos para el calendario */
+        .calendar-day.has-appointment {
+            position: relative;
+        }
+        .calendar-day.has-appointment::after {
+            content: '';
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #0ea5e9; /* sky-500 */
+        }
+        .calendar-day.selected {
+            background-color: #0284c7; /* sky-700 */
+            color: white;
+            border-radius: 50%;
+        }
+        .calendar-day.today {
+            font-weight: bold;
+            border: 2px solid #0ea5e9;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <div id="app" class="flex flex-col md:flex-row min-h-screen">
+        <nav class="bg-white md:w-64 p-4 md:p-6 shadow-lg flex md:flex-col justify-between md:justify-start">
+            <div>
+                <div class="flex items-center space-x-3 mb-8">
+                    <img id="app-logo" src="https://placehold.co/40x40/0284c7/white?text=DH" alt="Logo" class="rounded-lg h-10 w-10 object-cover">
+                    <h1 class="text-xl font-bold text-slate-900">Dental Health</h1>
+                </div>
+                <ul class="space-y-2">
+                    <li><a href="#" id="nav-agenda" class="nav-link flex items-center space-x-3 p-3 rounded-lg text-slate-700 font-medium bg-sky-100 text-sky-700"><i data-lucide="calendar"></i><span>Agenda</span></a></li>
+                    <li><a href="#" id="nav-pacientes" class="nav-link flex items-center space-x-3 p-3 rounded-lg text-slate-700 font-medium hover:bg-slate-200"><i data-lucide="users"></i><span>Pacientes</span></a></li>
+                    <li><a href="#" id="nav-config" class="nav-link flex items-center space-x-3 p-3 rounded-lg text-slate-700 font-medium hover:bg-slate-200"><i data-lucide="settings"></i><span>Configuración</span></a></li>
+                </ul>
+            </div>
+            <div class="text-xs text-slate-400 mt-auto hidden md:block">
+                <p>&copy; 2025 Dental Health App</p>
+                <p>Project ID: <span id="project-id-display" class="font-mono"></span></p>
+            </div>
+        </nav>
+
+        <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+
+            <div id="agenda-view" class="view active">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2 md:mb-0">Agenda de Citas</h2>
+                    <button id="generate-pdf-btn" class="flex items-center space-x-2 bg-slate-800 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-slate-700 transition">
+                        <i data-lucide="file-down"></i>
+                        <span>Generar Reporte PDF</span>
+                    </button>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+                    <h3 class="text-xl font-semibold mb-4">Agendar Nueva Cita</h3>
+                    <form id="add-appointment-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                        <div class="md:col-span-2 lg:col-span-1">
+                            <label for="patient-name" class="block text-sm font-medium text-slate-600 mb-1">Nombre Paciente</label>
+                            <input type="text" id="patient-name" list="patient-list" placeholder="Nombre completo" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500" required>
+                            <datalist id="patient-list"></datalist>
+                        </div>
+                         <div>
+                            <label for="appointment-phone" class="block text-sm font-medium text-slate-600 mb-1">Teléfono (WhatsApp)</label>
+                            <input type="tel" id="appointment-phone" placeholder="Se guardará si es nuevo" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500" required>
+                        </div>
+                        <div>
+                            <label for="appointment-date" class="block text-sm font-medium text-slate-600 mb-1">Fecha</label>
+                            <input type="date" id="appointment-date" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500" required>
+                        </div>
+                        <div>
+                            <label for="appointment-time" class="block text-sm font-medium text-slate-600 mb-1">Hora</label>
+                            <input type="time" id="appointment-time" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500" required>
+                        </div>
+                        <div class="md:col-span-2 lg:col-span-3">
+                            <label for="appointment-notes" class="block text-sm font-medium text-slate-600 mb-1">Notas del tratamiento</label>
+                            <input type="text" id="appointment-notes" placeholder="Ej: Limpieza general, revisión de molar" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <div class="md:col-span-2 lg:col-span-1">
+                            <button type="submit" class="w-full bg-sky-600 text-white font-bold px-4 py-2 rounded-lg shadow-md hover:bg-sky-700 transition">Agendar Cita</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <div id="calendar-header" class="flex justify-between items-center mb-4">
+                        <button id="prev-month-btn" class="p-2 rounded-full hover:bg-slate-200"><i data-lucide="chevron-left"></i></button>
+                        <h3 id="month-year-display" class="text-xl font-semibold"></h3>
+                        <button id="next-month-btn" class="p-2 rounded-full hover:bg-slate-200"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                    <div id="calendar-weekdays" class="grid grid-cols-7 gap-2 text-center text-sm font-medium text-slate-500 mb-2">
+                        <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+                    </div>
+                    <div id="calendar-grid" class="grid grid-cols-7 gap-2">
+                    </div>
+                </div>
+
+                 <div id="daily-appointments-container" class="mt-8">
+                    <h3 id="daily-appointments-title" class="text-2xl font-bold text-slate-900 mb-4">Citas del día</h3>
+                    <div id="daily-appointments-list" class="space-y-4">
+                        <p class="text-slate-500">Selecciona un día en el calendario para ver las citas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pacientes-view" class="view">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2 md:mb-0">Gestión de Pacientes</h2>
+                    <button id="export-excel-btn" class="flex items-center space-x-2 bg-green-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition">
+                        <i data-lucide="sheet"></i>
+                        <span>Exportar a Excel</span>
+                    </button>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+                    <h3 class="text-xl font-semibold mb-4">Registrar o Editar Paciente</h3>
+                    <form id="add-patient-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="hidden" id="patient-id">
+                        <div>
+                            <label for="new-patient-name" class="block text-sm font-medium text-slate-600 mb-1">Nombre Completo</label>
+                            <input type="text" id="new-patient-name" placeholder="Nombre y apellidos" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500" required>
+                        </div>
+                        <div>
+                            <label for="new-patient-phone" class="block text-sm font-medium text-slate-600 mb-1">Teléfono (WhatsApp)</label>
+                            <input type="tel" id="new-patient-phone" placeholder="Ej: 521234567890 (código de país + número)" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="new-patient-history" class="block text-sm font-medium text-slate-600 mb-1">Historial Clínico / Alergias</label>
+                            <textarea id="new-patient-history" rows="3" placeholder="Alergias, condiciones médicas relevantes..." class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500"></textarea>
+                        </div>
+                        <div class="md:col-span-2 flex justify-end space-x-2">
+                             <button type="button" id="cancel-edit-patient-btn" class="w-auto bg-slate-200 text-slate-800 font-bold px-4 py-2 rounded-lg hover:bg-slate-300 transition hidden">Cancelar</button>
+                            <button type="submit" class="w-auto bg-sky-600 text-white font-bold px-4 py-2 rounded-lg shadow-md hover:bg-sky-700 transition">Guardar Paciente</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="p-4 border-b">
+                         <input type="text" id="search-patient" placeholder="Buscar paciente por nombre..." class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500">
+                    </div>
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nombre</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Teléfono</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patients-table-body" class="bg-white divide-y divide-slate-200">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="config-view" class="view">
+                 <h2 class="text-3xl font-bold text-slate-900 mb-6">Configuración</h2>
+                 <div class="bg-white p-6 rounded-xl shadow-md">
+                     <h3 class="text-xl font-semibold mb-4">Personalización</h3>
+                     <div class="space-y-4">
+                         <div>
+                            <p class="block text-sm font-medium text-slate-600 mb-2">Logo de la Aplicación</p>
+                            <button id="upload-logo-btn" class="bg-sky-600 text-white font-bold px-4 py-2 rounded-lg shadow-md hover:bg-sky-700 transition">Subir Nuevo Logo</button>
+                         </div>
+                         <div class="flex space-x-2">
+                             <button id="remove-logo-btn" class="bg-slate-200 text-slate-800 font-bold px-4 py-2 rounded-lg hover:bg-slate-300 transition">Quitar Logo</button>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="patient-modal" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 hidden opacity-0">
+        <div class="modal-content bg-white w-full max-w-2xl rounded-xl shadow-2xl transform scale-95">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h3 id="modal-patient-name" class="text-2xl font-bold">Detalles del Paciente</h3>
+                <button id="close-modal-btn" class="text-slate-500 hover:text-slate-800"><i data-lucide="x" class="h-6 w-6"></i></button>
+            </div>
+            <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <p><strong>Teléfono:</strong> <span id="modal-patient-phone"></span></p>
+                <div>
+                    <p><strong>Historial Clínico:</strong></p>
+                    <p id="modal-patient-history" class="p-3 bg-slate-100 rounded-lg whitespace-pre-wrap"></p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mt-4 mb-2">Historial de Citas</h4>
+                    <ul id="modal-appointment-history" class="space-y-2">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc, setDoc, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfpPW6aXJBLmAjeYD4rRQQpehPmv9n9zE",
+            authDomain: "dental-health-app-85d74.firebaseapp.com",
+            projectId: "dental-health-app-85d74",
+            storageBucket: "dental-health-app-85d74.firebasestorage.app",
+            messagingSenderId: "941842622103",
+            appId: "1:941842622103:web:7a423f9edc7e19d1972bd2",
+            measurementId: "G-QP4FVGVT19"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        document.getElementById('project-id-display').textContent = firebaseConfig.projectId;
+
+        let appointmentsCol;
+        let patientsCol;
+        let settingsCol;
+
+        let allPatients = [];
+        let allAppointments = [];
+        let currentDate = new Date();
+        let selectedDate = null;
+
+        const views = document.querySelectorAll('.view');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const patientsTableBody = document.getElementById('patients-table-body');
+        const patientDatalist = document.getElementById('patient-list');
+        const dailyAppointmentsList = document.getElementById('daily-appointments-list');
+        
+        function switchView(viewId) {
+            views.forEach(view => view.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            
+            navLinks.forEach(link => {
+                link.classList.remove('bg-sky-100', 'text-sky-700');
+                link.classList.add('hover:bg-slate-200');
+            });
+            const activeLink = document.querySelector(`#nav-${viewId.split('-')[0]}`);
+            if (activeLink) {
+                activeLink.classList.add('bg-sky-100', 'text-sky-700');
+                activeLink.classList.remove('hover:bg-slate-200');
+            }
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const viewId = `${link.id.split('-')[1]}-view`;
+                switchView(viewId);
+            });
+        });
+
+        const addPatientForm = document.getElementById('add-patient-form');
+        const patientIdInput = document.getElementById('patient-id');
+        const cancelEditBtn = document.getElementById('cancel-edit-patient-btn');
+        
+        function loadPatients() {
+            if (!patientsCol) return;
+            onSnapshot(patientsCol, (snapshot) => {
+                allPatients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderPatients(allPatients);
+                updatePatientDatalist();
+            }, (error) => {
+                console.error("Error al cargar pacientes: ", error);
+            });
+        }
+        
+        function renderPatients(patientsToRender) {
+            patientsTableBody.innerHTML = '';
+            if (patientsToRender.length === 0) {
+                patientsTableBody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-slate-500">No hay pacientes registrados.</td></tr>`;
+                return;
+            }
+            patientsToRender.forEach(patient => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-medium text-slate-900">${patient.name}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-slate-600">${patient.phone}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <button class="view-patient-btn text-sky-600 hover:text-sky-900" data-id="${patient.id}"><i data-lucide="eye" class="h-5 w-5"></i></button>
+                        <button class="edit-patient-btn text-amber-600 hover:text-amber-900" data-id="${patient.id}"><i data-lucide="edit" class="h-5 w-5"></i></button>
+                        <button class="delete-patient-btn text-red-600 hover:text-red-900" data-id="${patient.id}"><i data-lucide="trash-2" class="h-5 w-5"></i></button>
+                    </td>
+                `;
+                patientsTableBody.appendChild(tr);
+            });
+            lucide.createIcons();
+        }
+
+        function updatePatientDatalist() {
+            patientDatalist.innerHTML = '';
+            allPatients.forEach(patient => {
+                const option = document.createElement('option');
+                option.value = patient.name;
+                patientDatalist.appendChild(option);
+            });
+        }
+        
+        addPatientForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!patientsCol) {
+                console.error("FALLO CRÍTICO: La referencia a la colección 'pacientes' no está definida.");
+                alert("Error: La base de datos no está lista. Por favor, recarga la página.");
+                return;
+            }
+
+            const name = document.getElementById('new-patient-name').value;
+            const phone = document.getElementById('new-patient-phone').value;
+            const history = document.getElementById('new-patient-history').value;
+            const patientId = patientIdInput.value;
+            const patientData = { name, phone, history };
+            
+            console.log("Intentando guardar:", patientData);
+
+            try {
+                if(patientId) {
+                    await setDoc(doc(db, patientsCol.path, patientId), patientData);
+                } else {
+                    await addDoc(patientsCol, patientData);
+                }
+                addPatientForm.reset();
+                patientIdInput.value = '';
+                cancelEditBtn.classList.add('hidden');
+            } catch (error) {
+                console.error("❌ ERROR AL GUARDAR PACIENTE:", error);
+                alert(`No se pudo guardar el paciente. Revisa la consola.\n\nMensaje: ${error.message}`);
+            }
+        });
+        
+        patientsTableBody.addEventListener('click', async (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+            const patientId = target.dataset.id;
+            if(target.classList.contains('delete-patient-btn')) {
+                if (confirm('¿Estás seguro de que quieres eliminar a este paciente y todas sus citas asociadas?')) {
+                    const patientToDelete = allPatients.find(p => p.id === patientId);
+                    if (patientToDelete) {
+                        const q = query(appointmentsCol, where("patientName", "==", patientToDelete.name));
+                        const querySnapshot = await getDocs(q);
+                        querySnapshot.forEach(async (docSnapshot) => {
+                            await deleteDoc(doc(db, appointmentsCol.path, docSnapshot.id));
+                        });
+                    }
+                    await deleteDoc(doc(db, patientsCol.path, patientId));
+                }
+            } else if (target.classList.contains('edit-patient-btn')) {
+                const patient = allPatients.find(p => p.id === patientId);
+                document.getElementById('new-patient-name').value = patient.name;
+                document.getElementById('new-patient-phone').value = patient.phone;
+                document.getElementById('new-patient-history').value = patient.history;
+                patientIdInput.value = patient.id;
+                cancelEditBtn.classList.remove('hidden');
+                document.getElementById('add-patient-form').scrollIntoView({ behavior: 'smooth' });
+            } else if (target.classList.contains('view-patient-btn')) {
+                openPatientModal(patientId);
+            }
+        });
+
+        cancelEditBtn.addEventListener('click', () => {
+             addPatientForm.reset();
+             patientIdInput.value = '';
+             cancelEditBtn.classList.add('hidden');
+        });
+
+        document.getElementById('search-patient').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredPatients = allPatients.filter(p => p.name.toLowerCase().includes(searchTerm));
+            renderPatients(filteredPatients);
+        });
+
+        const addAppointmentForm = document.getElementById('add-appointment-form');
+        
+        function loadAppointments() {
+             if (!appointmentsCol) return;
+             const q = query(appointmentsCol, orderBy("date"));
+             onSnapshot(q, (snapshot) => {
+                allAppointments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderCalendar();
+                if (selectedDate) {
+                    renderDailyAppointments(selectedDate);
+                }
+            }, (error) => {
+                console.error("Error al cargar citas: ", error);
+            });
+        }
+        
+        addAppointmentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const patientName = document.getElementById('patient-name').value.trim();
+            const patientPhone = document.getElementById('appointment-phone').value;
+            const date = document.getElementById('appointment-date').value;
+            const time = document.getElementById('appointment-time').value;
+            const notes = document.getElementById('appointment-notes').value;
+            
+            if (!patientName || !patientPhone || !date || !time) {
+                alert("Por favor completa nombre, teléfono, fecha y hora.");
+                return;
+            }
+
+            try {
+                const existingPatient = allPatients.find(p => p.name.toLowerCase() === patientName.toLowerCase());
+
+                if (!existingPatient) {
+                    console.log(`Paciente '${patientName}' no encontrado. Creando nuevo registro.`);
+                    const newPatientData = { name: patientName, phone: patientPhone, history: "" };
+                    await addDoc(patientsCol, newPatientData);
+                } else {
+                    console.log(`Paciente '${patientName}' encontrado.`);
+                }
+                
+                const appointmentData = { patientName, date, time, notes };
+                await addDoc(appointmentsCol, appointmentData);
+                
+                addAppointmentForm.reset();
+                document.getElementById('appointment-date').valueAsDate = new Date();
+
+            } catch (error) {
+                console.error("Error agendando cita: ", error);
+                alert("No se pudo agendar la cita. Revisa la consola para más detalles.");
+            }
+        });
+
+        document.getElementById('patient-name').addEventListener('change', (e) => {
+            const selectedPatient = allPatients.find(p => p.name === e.target.value);
+            if (selectedPatient) {
+                document.getElementById('appointment-phone').value = selectedPatient.phone;
+            }
+        });
+        
+        const calendarGrid = document.getElementById('calendar-grid');
+        const monthYearDisplay = document.getElementById('month-year-display');
+
+        function renderCalendar() {
+            calendarGrid.innerHTML = '';
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            monthYearDisplay.textContent = new Date(year, month).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+            
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const startingDay = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1; 
+
+            for (let i = 0; i < startingDay; i++) {
+                calendarGrid.innerHTML += `<div></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayDate = new Date(year, month, day);
+                const dayString = dayDate.toISOString().split('T')[0];
+
+                let classes = 'calendar-day h-10 w-10 flex items-center justify-center cursor-pointer hover:bg-slate-200 rounded-full';
+                
+                const appointmentsForDay = allAppointments.some(app => app.date === dayString);
+                if(appointmentsForDay) classes += ' has-appointment';
+
+                const todayString = new Date().toISOString().split('T')[0];
+                if (dayString === todayString) classes += ' today';
+                
+                calendarGrid.innerHTML += `<div class="${classes}" data-date="${dayString}">${day}</div>`;
+            }
+        }
+
+        document.getElementById('prev-month-btn').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        });
+
+        document.getElementById('next-month-btn').addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+        calendarGrid.addEventListener('click', (e) => {
+            if (e.target.classList.contains('calendar-day')) {
+                const dateStr = e.target.dataset.date;
+                selectedDate = new Date(dateStr + 'T00:00:00');
+                renderDailyAppointments(selectedDate);
+
+                document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+                e.target.classList.add('selected');
+            }
+        });
+
+        function renderDailyAppointments(date) {
+            const titleEl = document.getElementById('daily-appointments-title');
+            dailyAppointmentsList.innerHTML = '';
+
+            titleEl.textContent = `Citas para el ${date.toLocaleDateString('es-ES', {weekday: 'long', day: 'numeric', month: 'long'})}`;
+
+            const dateString = date.toISOString().split('T')[0];
+            const dailyAppointments = allAppointments.filter(app => app.date === dateString)
+                                                     .sort((a, b) => a.time.localeCompare(b.time));
+
+            if (dailyAppointments.length === 0) {
+                dailyAppointmentsList.innerHTML = `<div class="bg-white p-4 rounded-lg shadow-sm text-center text-slate-500">No hay citas para este día.</div>`;
+                return;
+            }
+
+            dailyAppointments.forEach(appointment => {
+                const appointmentTime = appointment.time;
+                const [hours, minutes] = appointmentTime.split(':');
+                const timeObj = new Date();
+                timeObj.setHours(hours, minutes, 0, 0);
+                const formattedTime = timeObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl shadow-sm border-l-4 border-sky-500 flex flex-col md:flex-row justify-between items-start md:items-center gap-4";
+                card.innerHTML = `
+                    <div>
+                        <p class="font-bold text-lg text-slate-800">${appointment.patientName}</p>
+                        <p class="text-slate-600">${appointment.notes || 'Sin notas'}</p>
+                        <p class="text-sm text-slate-500 mt-1"><i data-lucide="clock" class="inline-block h-4 w-4 -mt-1"></i> a las ${formattedTime}</p>
+                    </div>
+                    <div class="flex items-center space-x-2 flex-wrap gap-2">
+                        <button class="whatsapp-btn flex items-center space-x-2 text-sm bg-green-500 text-white font-semibold px-3 py-2 rounded-lg hover:bg-green-600 transition" data-name="${appointment.patientName}" data-date="${date.toLocaleDateString('es-ES')}" data-time="${formattedTime}">
+                            <i data-lucide="send"></i><span>Confirmar</span>
+                        </button>
+                        <button class="delete-appointment-btn text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-100" data-id="${appointment.id}"><i data-lucide="trash-2" class="h-5 w-5"></i></button>
+                    </div>
+                `;
+                dailyAppointmentsList.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        dailyAppointmentsList.addEventListener('click', async (e) => {
+            const target = e.target.closest('button');
+            if (!target) return;
+            
+            if(target.classList.contains('delete-appointment-btn')) {
+                const appointmentId = target.dataset.id;
+                 if (confirm('¿Estás seguro de que quieres eliminar esta cita?')) {
+                    await deleteDoc(doc(db, appointmentsCol.path, appointmentId));
+                 }
+            } else if (target.classList.contains('whatsapp-btn')) {
+                const patientName = target.dataset.name;
+                const patient = allPatients.find(p => p.name === patientName);
+                if (!patient || !patient.phone) {
+                    alert('Este paciente no tiene un número de teléfono registrado.');
+                    return;
+                }
+                const date = target.dataset.date;
+                const time = target.dataset.time;
+                const message = encodeURIComponent(`Hola ${patientName}, te recordamos tu cita dental para el ${date} a las ${time}. Por favor, confirma tu asistencia. ¡Gracias!`);
+                window.open(`https.wa.me/${patient.phone}?text=${message}`, '_blank');
+            }
+        });
+        
+        const modal = document.getElementById('patient-modal');
+        async function openPatientModal(patientId) {
+            const patient = allPatients.find(p => p.id === patientId);
+            if (!patient) return;
+            document.getElementById('modal-patient-name').textContent = patient.name;
+            document.getElementById('modal-patient-phone').textContent = patient.phone;
+            document.getElementById('modal-patient-history').textContent = patient.history || 'No hay historial registrado.';
+            const historyList = document.getElementById('modal-appointment-history');
+            historyList.innerHTML = '<li>Cargando historial...</li>';
+            const patientAppointments = allAppointments.filter(app => app.patientName === patient.name)
+                .sort((a,b) => new Date(b.date) - new Date(a.date));
+            if(patientAppointments.length > 0) {
+                 historyList.innerHTML = patientAppointments.map(app => {
+                    const appDate = new Date(`${app.date}T${app.time}`);
+                    return `<li class="p-2 bg-slate-50 rounded-md text-sm"><strong>${appDate.toLocaleDateString('es-ES')}</strong> - ${app.notes || 'Cita general'}</li>`;
+                 }).join('');
+            } else {
+                historyList.innerHTML = '<li>No hay citas registradas para este paciente.</li>';
+            }
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            setTimeout(() => modal.querySelector('.modal-content').classList.remove('scale-95'), 10);
+        }
+
+        function closePatientModal() {
+            modal.classList.add('opacity-0');
+            modal.querySelector('.modal-content').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        document.getElementById('close-modal-btn').addEventListener('click', closePatientModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closePatientModal();
+        });
+
+        document.getElementById('generate-pdf-btn').addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Reporte de Citas - Dental Health", 14, 16);
+            doc.setFontSize(10);
+            doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-ES')}`, 14, 22);
+            const tableColumn = ["Paciente", "Fecha", "Hora", "Tratamiento"];
+            const tableRows = [];
+            
+            const appointmentsToReport = [...allAppointments].sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            appointmentsToReport.forEach(app => {
+                const appDate = new Date(`${app.date}T${app.time}`);
+                const appData = [
+                    app.patientName,
+                    appDate.toLocaleDateString('es-ES'),
+                    appDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+                    app.notes
+                ];
+                tableRows.push(appData);
+            });
+
+            doc.autoTable(tableColumn, tableRows, { startY: 30 });
+            doc.save(`reporte_citas_completo_${new Date().toISOString().slice(0,10)}.pdf`);
+        });
+
+        document.getElementById('export-excel-btn').addEventListener('click', () => {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Nombre,Telefono,Historial Clinico\n";
+            allPatients.forEach(patient => {
+                const sanitizedHistory = `"${(patient.history || '').replace(/"/g, '""')}"`;
+                const row = [patient.name, patient.phone, sanitizedHistory].join(",");
+                csvContent += row + "\n";
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "historial_pacientes.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        const appLogo = document.getElementById('app-logo');
+
+        async function saveLogoUrlToFirestore(url) {
+            try {
+                const settingsDocRef = doc(db, settingsCol.path, 'config');
+                await setDoc(settingsDocRef, { logoUrl: url }, { merge: true });
+            } catch (error) {
+                console.error("Error guardando logo en Firestore:", error);
+            }
+        }
+
+        function loadLogoFromFirestore() {
+            const settingsDocRef = doc(db, settingsCol.path, 'config');
+            onSnapshot(settingsDocRef, (docSnap) => {
+                if (docSnap.exists() && docSnap.data().logoUrl) {
+                    appLogo.src = docSnap.data().logoUrl;
+                } else {
+                    appLogo.src = 'https://placehold.co/40x40/0284c7/white?text=DH';
+                }
+            });
+        }
+        
+        const cloudinaryWidget = cloudinary.createUploadWidget({
+            cloudName: 'dogmquujl', 
+            uploadPreset: 'fotos_preset'
+        }, (error, result) => { 
+            if (!error && result && result.event === "success") { 
+              console.log('Imagen subida con éxito: ', result.info);
+              saveLogoUrlToFirestore(result.info.secure_url);
+            }
+        });
+
+        document.getElementById('upload-logo-btn').addEventListener('click', function(){
+            cloudinaryWidget.open();
+        }, false);
+        
+        document.getElementById('remove-logo-btn').addEventListener('click', () => {
+            const defaultLogo = 'https://placehold.co/40x40/0284c7/white?text=DH';
+            saveLogoUrlToFirestore(defaultLogo);
+        });
+
+        window.onload = async () => {
+            lucide.createIcons();
+            try {
+                await signInAnonymously(auth);
+                
+                patientsCol = collection(db, 'pacientes');
+                appointmentsCol = collection(db, 'citas');
+                settingsCol = collection(db, 'settings');
+                
+                loadPatients();
+                loadAppointments();
+                loadLogoFromFirestore();
+                
+                switchView('agenda-view');
+                document.getElementById('appointment-date').valueAsDate = new Date();
+                
+            } catch (error) {
+                console.error("Error de autenticación o inicialización:", error);
+                document.body.innerHTML = `<div class="p-8"><div class="text-center p-8 text-red-600 bg-red-100 rounded-lg"><h2>Error de Conexión</h2><p>No se pudo conectar con la base de datos.</p><p class="mt-4 text-sm text-slate-600">Por favor, verifica lo siguiente:</p><ul class="text-left text-sm text-slate-500 list-disc list-inside mt-2"><li>Que la configuración de Firebase en el archivo HTML sea correcta.</li><li>Que hayas habilitado la <strong>Cloud Firestore API</strong> y la <strong>Identity Toolkit API</strong> en Google Cloud.</li><li>Que las reglas de seguridad de Firestore permitan la lectura/escritura (modo de prueba).</li></ul></div></div>`;
+            }
+        };
+    </script>
+</body>
+</html>
+
+

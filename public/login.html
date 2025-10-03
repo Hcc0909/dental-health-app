@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="csrf-token" content="{{CSRF_TOKEN}}" />
+  <title>Acceso | Consultorio Dental</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #0b1420;
+      --bg-2: #0e1a28;
+      --card: #0f172aCC; /* slate-900 with alpha */
+      --text: #e6f3ff;
+      --muted:#a9bfd6;
+      --line:#1f2d3d;
+      --brand:#2ec4b6; /* teal */
+      --brand-2:#4cc9f0; /* aqua */
+      --danger:#ef476f;
+      --warning:#ffd166;
+      --radius: 16px;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      --field: #0b1220; 
+      --focus: 0 0 0 3px rgba(76, 201, 240, .45), 0 8px 24px rgba(0,0,0,.35);
+      --max: 1080px;
+    }
+    @media (prefers-color-scheme: light){
+      :root{ --bg:#eef6fb; --bg-2:#e7f1f7; --card:#ffffffE6; --text:#0b2239; --muted:#51667a; --line:#d7e2ea; --field:#f6fbff; }
+    }
+    *{ box-sizing:border-box }
+    html,body{ height:100% }
+    body{
+      margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+      color:var(--text); background:radial-gradient(1000px 600px at 10% -10%, #153b5f 0%, transparent 60%),
+               radial-gradient(900px 500px at 110% 20%, #0c4a6e 0%, transparent 55%),
+               linear-gradient(160deg, var(--bg) 0%, var(--bg-2) 100%);
+      display:grid; place-items:center; padding:24px;
+    }
+    .grid{
+      width: min(100%, var(--max)); display:grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
+      align-items:center;
+    }
+    .brand{
+      grid-column: 1 / span 6; display:none; position:relative; min-height: 560px;
+    }
+    @media (min-width: 980px){ .brand{ display:block } }
+    .brand-card{
+      position:relative; height:100%; border-radius: 28px; background: linear-gradient(160deg, rgba(46,196,182,.18), rgba(76,201,240,.14));
+      border:1px solid rgba(76,201,240,.25); overflow:hidden; box-shadow: var(--shadow);
+    }
+    .tooth{
+      position:absolute; inset:auto -60px -80px -60px; opacity:.20; filter: blur(1px);
+      background:
+        radial-gradient(160px 120px at 20% 20%, #ffffff33, transparent 70%),
+        radial-gradient(220px 160px at 80% 10%, #4cc9f033, transparent 60%);
+      mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path fill="white" d="M160.3 23.7c-22.9 0-34.2 10.9-32.3 32.6c1.9-21.7-9.4-32.6-32.3-32.6C55.3 23.7 32 48.6 32 83.7c0 52 27.7 68 43.4 68c15.7 0 14-42.6 24.6-42.6c13 0 9.3 70.9 28.1 70.9s15.1-70.9 28.1-70.9c10.6 0 8.9 42.6 24.6 42.6c15.7 0 43.4-16 43.4-68c0-35.1-23.3-60-63.9-60z"/></svg>') center / contain no-repeat;
+    }
+    .brand-content{
+      position:absolute; inset:0; padding:40px; display:flex; flex-direction:column; justify-content:space-between;
+    }
+    .logo{
+      display:flex; align-items:center; gap:14px; font-weight:700; letter-spacing:.2px;
+    }
+    .logo-badge{ width:48px; height:48px; border-radius:14px; display:grid; place-items:center; background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%); box-shadow: inset 0 -4px 14px rgba(0,0,0,.15); }
+    .logo svg{ width:28px; height:28px; }
+    .slogan{ font-size:1.05rem; color:var(--muted); margin-top:8px }
+    .benefits{ display:grid; gap:14px; margin-top:auto }
+    .benefit{ padding:14px 16px; border:1px solid var(--line); border-radius:14px; background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.06)); backdrop-filter: blur(6px); }
+
+    /* Auth card */
+    .auth{
+      grid-column: 1 / -1; @media(min-width:980px){ grid-column: 8 / span 5; }
+    }
+    .card{ border-radius: 24px; background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); overflow:hidden; }
+    .card-head{ padding:32px 28px 0 28px; }
+    .tabs{ display:flex; gap:12px; }
+    .tab{ border:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.06)); padding:8px 14px; border-radius:100px; font-weight:600; color:var(--muted); cursor:pointer; }
+    .tab[aria-selected="true"]{ color:var(--text); border-color:transparent; background: linear-gradient(135deg, rgba(46,196,182,.35), rgba(76,201,240,.35)); box-shadow: inset 0 0 0 1px rgba(255,255,255,.15); }
+
+    .card-body{ padding:24px 28px 32px 28px; }
+    form{ display:grid; gap:16px; }
+    .field{ display:grid; gap:8px; }
+    label{ font-weight:600; }
+    .control{ position:relative }
+    input[type="email"], input[type="password"], input[type="text"], input[type="tel"], input[type="number"]{
+      width:100%; padding:14px 44px 14px 14px; border-radius: 12px; background: var(--field);
+      border:1px solid var(--line); color:var(--text); font: inherit; outline:none; box-shadow:none; transition:.25s;
+    }
+    input:focus{ border-color: transparent; box-shadow: var(--focus) }
+    input::placeholder{ color: #8fa6bb }
+    .toggle{ position:absolute; top:50%; right:10px; transform: translateY(-50%); border:0; background:transparent; cursor:pointer; color:var(--muted) }
+    .msg{ display:flex; align-items:center; gap:8px; font-size:.95rem; color:var(--muted) }
+    .msg.error{ color: var(--danger) }
+    .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .checkbox{ display:flex; align-items:center; gap:10px; user-select:none; }
+    .checkbox input{ width:18px; height:18px }
+    .link{ color: var(--brand-2); font-weight:600; text-decoration:none }
+
+    .btn{ --h: 48px; height: var(--h); border-radius: 12px; border: 1px solid transparent; font-weight:700; letter-spacing:.2px; cursor:pointer; transition:.2s; display:inline-grid; place-items:center; padding:0 16px }
+    .btn[disabled]{ opacity:.65; cursor:not-allowed; filter: grayscale(.3) }
+    .btn-primary{ background: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%); color:#012231; box-shadow: 0 6px 20px rgba(76,201,240,.25) }
+    .btn-primary:hover{ transform: translateY(-1px) }
+    .btn-ghost{ background: transparent; border-color: var(--line); color: var(--text) }
+
+    .providers{ display:grid; gap:10px; grid-template-columns: 1fr 1fr }
+
+    .divider{ display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; gap:12px; color:var(--muted) }
+    .divider::before, .divider::after{ content:""; height:1px; background:var(--line) }
+
+    .foot{ color:var(--muted); text-align:center; font-size:.95rem }
+
+    /* 2FA modal */
+    dialog{ border:none; border-radius: 18px; max-width: 520px; width: calc(100% - 32px); background: var(--card); color:var(--text); box-shadow: var(--shadow); }
+    dialog::backdrop{ background: rgba(5,10,20,.65); backdrop-filter: blur(3px) }
+    .otp{ display:grid; grid-template-columns: repeat(6, 1fr); gap:10px; margin: 8px 0 16px }
+    .otp input{ text-align:center; font-size:1.25rem; padding:12px 0 }
+
+    /* Motion */
+    @media (prefers-reduced-motion:no-preference){
+      .card{ animation: pop .35s ease-out }
+      @keyframes pop{ from{ transform: translateY(6px); opacity:0 } to{ transform:none; opacity:1 } }
+    }
+    .sr-only{ position:absolute !important; clip:rect(1px,1px,1px,1px); padding:0 !important; border:0 !important; height:1px !important; width:1px !important; overflow:hidden }
+
+    /* Small tweaks */
+    .caps{ display:none }
+    .caps.on{ display:flex }
+  </style>
+</head>
+<body>
+  <main class="grid" aria-label="Acceso al sistema del consultorio dental">
+    <!-- Lado visual / beneficios -->
+    <aside class="brand" aria-hidden="true">
+      <div class="brand-card">
+        <div class="tooth"></div>
+        <div class="brand-content">
+          <div>
+            <div class="logo" aria-label="Logo Consultorio Dental">
+              <div class="logo-badge" aria-hidden="true">
+                <svg viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M160.3 23.7c-22.9 0-34.2 10.9-32.3 32.6c1.9-21.7-9.4-32.6-32.3-32.6C55.3 23.7 32 48.6 32 83.7c0 52 27.7 68 43.4 68c15.7 0 14-42.6 24.6-42.6c13 0 9.3 70.9 28.1 70.9s15.1-70.9 28.1-70.9c10.6 0 8.9 42.6 24.6 42.6c15.7 0 43.4-16 43.4-68c0-35.1-23.3-60-63.9-60z" fill="white"/>
+                </svg>
+              </div>
+              <span>Consultorio Dental</span>
+            </div>
+            <p class="slogan">Agenda, expedientes y recordatorios en un solo lugar. Seguridad clínica de nivel empresarial.</p>
+          </div>
+          <div class="benefits">
+            <div class="benefit">✔️ Cumplimiento: control de acceso por rol (recepción, odontólogo, administrador).</div>
+            <div class="benefit">✔️ Seguridad: 2FA opcional y bloqueo por intentos fallidos.</div>
+            <div class="benefit">✔️ Flujo rápido: recordar dispositivo y autocompletar seguro.</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Tarjeta de autenticación -->
+    <section class="auth">
+      <div class="card" role="region" aria-labelledby="t-auth">
+        <div class="card-head">
+          <h1 id="t-auth" style="margin:0 0 12px 0; font-size:1.6rem">Inicia sesión</h1>
+          <div class="tabs" role="tablist" aria-label="Tipos de inicio de sesión">
+            <button class="tab" role="tab" aria-selected="true" id="tab-email" aria-controls="panel-email">Correo</button>
+            <button class="tab" role="tab" aria-selected="false" id="tab-phone" aria-controls="panel-phone">Teléfono</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Panel: Correo -->
+          <form id="form-email" role="tabpanel" aria-labelledby="tab-email" autocomplete="on" novalidate>
+            <div class="field">
+              <label for="email">Correo electrónico</label>
+              <div class="control">
+                <input id="email" name="email" type="email" inputmode="email" placeholder="tupaciente@ejemplo.com" required aria-describedby="email-err" />
+              </div>
+              <div id="email-err" class="msg" aria-live="polite"></div>
+            </div>
+
+            <div class="field">
+              <div class="row" style="justify-content:space-between">
+                <label for="password">Contraseña</label>
+                <span id="caps-note" class="msg caps">Bloq Mayús activado</span>
+              </div>
+              <div class="control">
+                <input id="password" name="password" type="password" placeholder="••••••••" required minlength="6" aria-describedby="pass-err" />
+                <button type="button" class="toggle" aria-label="Mostrar u ocultar contraseña" id="toggle-pass">👁️</button>
+              </div>
+              <div id="pass-err" class="msg" aria-live="polite"></div>
+            </div>
+
+            <div class="row">
+              <label class="checkbox">
+                <input type="checkbox" id="remember" name="remember" />
+                <span>Recordar este dispositivo</span>
+              </label>
+              <a href="/recuperar" class="link">¿Olvidaste tu contraseña?</a>
+            </div>
+
+            <button id="btn-login" class="btn btn-primary" type="submit">
+              <span id="btn-text">Entrar</span>
+              <span id="btn-spinner" class="sr-only" aria-hidden="true">⏳</span>
+            </button>
+
+            <div id="form-error" class="msg error" aria-live="assertive" style="display:none"></div>
+
+            <div class="divider" style="margin:10px 0 6px">o continúa con</div>
+            <div class="providers">
+              <button type="button" class="btn btn-ghost" id="btn-google" aria-label="Entrar con Google">Google</button>
+              <button type="button" class="btn btn-ghost" id="btn-microsoft" aria-label="Entrar con Microsoft">Microsoft</button>
+            </div>
+          </form>
+
+          <!-- Panel: Teléfono -->
+          <form id="form-phone" role="tabpanel" aria-labelledby="tab-phone" hidden novalidate>
+            <div class="field">
+              <label for="phone">Número de teléfono</label>
+              <div class="control">
+                <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="+52 1 555 123 4567" required aria-describedby="phone-err" />
+              </div>
+              <div id="phone-err" class="msg" aria-live="polite"></div>
+            </div>
+            <button id="btn-login-phone" class="btn btn-primary" type="submit">Enviar código</button>
+            <div id="form-error-phone" class="msg error" aria-live="assertive" style="display:none"></div>
+          </form>
+
+          <p class="foot">¿No tienes cuenta? <a class="link" href="/registro">Crear cuenta</a></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal 2FA -->
+    <dialog id="modal-2fa" aria-labelledby="t-2fa">
+      <form id="form-2fa" method="dialog">
+        <div style="padding:22px 22px 10px 22px">
+          <h2 id="t-2fa" style="margin:0 0 6px 0">Verificación en dos pasos</h2>
+          <p class="msg">Ingresa el código de 6 dígitos enviado a tu correo o teléfono.</p>
+          <div class="otp">
+            <input inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="1" required aria-label="Código 1" />
+            <input inputmode="numeric" pattern="[0-9]*" maxlength="1" required aria-label="Código 2" />
+            <input inputmode="numeric" pattern="[0-9]*" maxlength="1" required aria-label="Código 3" />
+            <input inputmode="numeric" pattern="[0-9]*" maxlength="1" required aria-label="Código 4" />
+            <input inputmode="numeric" pattern="[0-9]*" maxlength="1" required aria-label="Código 5" />
+            <input inputmode="numeric" pattern="[0-9]*" maxlength="1" required aria-label="Código 6" />
+          </div>
+          <div class="row">
+            <button class="btn btn-ghost" value="cancel">Cancelar</button>
+            <button class="btn btn-primary" id="btn-verify" value="default">Verificar</button>
+          </div>
+          <div id="otp-error" class="msg error" aria-live="assertive" style="display:none"></div>
+        </div>
+      </form>
+    </dialog>
+  </main>
+
+  <script>
+    // Utilidades
+    const $ = (s, r = document) => r.querySelector(s);
+    const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+    // Tabs básicas
+    const tabs = $$('.tab');
+    const panels = ['panel-email','panel-phone'];
+    tabs.forEach(tab => tab.addEventListener('click', () => {
+      tabs.forEach(t => t.setAttribute('aria-selected', t === tab ? 'true' : 'false'));
+      $('#form-email').hidden = tab.id !== 'tab-email';
+      $('#form-phone').hidden = tab.id !== 'tab-phone';
+    }));
+
+    // Mostrar/ocultar contraseña
+    $('#toggle-pass').addEventListener('click', () => {
+      const input = $('#password');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    });
+
+    // Caps Lock detection
+    const caps = $('#caps-note');
+    $('#password').addEventListener('keydown', e => {
+      if (e.getModifierState && e.getModifierState('CapsLock')) caps.classList.add('on');
+      else caps.classList.remove('on');
+    });
+
+    // Recordar email localmente (si el usuario lo desea)
+    const rememberKey = 'dental.login.email';
+    const savedEmail = localStorage.getItem(rememberKey);
+    if (savedEmail) {
+      $('#email').value = savedEmail;
+      $('#remember').checked = true;
+    }
+
+    function showErr(id, msg){ const el = $(id); if(!el) return; el.textContent = msg || ''; el.style.display = msg ? 'flex' : 'none'; }
+
+    // Validación simple de email
+    function isEmail(v){ return /.+@.+\..+/.test(v); }
+    
+    // Submit correo + pass
+    $('#form-email').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = $('#email').value.trim();
+      const password = $('#password').value;
+      const remember = $('#remember').checked;
+
+      let ok = true;
+      if (!isEmail(email)) { showErr('#email-err', 'Ingresa un correo válido.'); ok = false; }
+      else showErr('#email-err');
+      if (!password || password.length < 6) { showErr('#pass-err', 'Tu contraseña debe tener al menos 6 caracteres.'); ok = false; }
+      else showErr('#pass-err');
+      if (!ok) return;
+
+      // Guardar email si el usuario lo pidió
+      if (remember) localStorage.setItem(rememberKey, email); else localStorage.removeItem(rememberKey);
+
+      // UI estado cargando
+      const btn = $('#btn-login');
+      const text = $('#btn-text');
+      const spinner = $('#btn-spinner');
+      btn.disabled = true; text.textContent = 'Entrando…'; spinner.classList.remove('sr-only');
+
+      try{
+        const res = await fetch('/api/auth/login', {
+          method:'POST', headers:{
+            'Content-Type':'application/json',
+            'X-CSRF-Token': $('meta[name="csrf-token"]').content || ''
+          },
+          body: JSON.stringify({ email, password, remember })
+        });
+        const data = await res.json().catch(()=> ({}));
+
+        if (!res.ok) {
+          showErr('#form-error', data.message || 'No pudimos iniciar sesión. Revisa tus datos.');
+          return;
+        }
+
+        // Si el backend indica que requiere 2FA
+        if (data.requires2FA) {
+          const dialog = $('#modal-2fa');
+          dialog.returnValue = '';
+          dialog.showModal();
+          const inputs = $$('.otp input', dialog);
+          inputs[0].focus();
+          inputs.forEach((inp, i) => {
+            inp.addEventListener('input', () => { if (inp.value && i < inputs.length - 1) inputs[i+1].focus(); });
+            inp.addEventListener('keydown', ev => { if (ev.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus(); });
+          });
+
+          $('#form-2fa').addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const code = inputs.map(i => i.value).join('');
+            if (code.length !== 6) { showErr('#otp-error', 'Código incompleto.'); return; }
+            showErr('#otp-error');
+
+            const vRes = await fetch('/api/auth/verify-2fa', {
+              method:'POST', headers:{ 'Content-Type':'application/json' },
+              body: JSON.stringify({ email, code })
+            });
+            const vData = await vRes.json().catch(()=> ({}));
+            if (!vRes.ok) { showErr('#otp-error', vData.message || 'Código incorrecto.'); return; }
+
+            dialog.close('ok');
+            window.location.assign(data.redirect || '/dashboard');
+          }, { once:true });
+
+          dialog.addEventListener('close', () => {
+            if (dialog.returnValue !== 'ok') {
+              // Si cierra sin validar, re-habilitamos el botón
+              btn.disabled = false; text.textContent = 'Entrar'; spinner.classList.add('sr-only');
+            }
+          }, { once:true });
+
+        } else {
+          window.location.assign(data.redirect || '/dashboard');
+        }
+      } catch(err){
+        console.error(err);
+        showErr('#form-error', 'Error de red. Intenta de nuevo.');
+      } finally {
+        // Si no hubo redirección ni 2FA, re-habilitar
+        const stillHere = !document.hidden && !$('#modal-2fa').open;
+        if (stillHere){ $('#btn-login').disabled = false; $('#btn-text').textContent = 'Entrar'; $('#btn-spinner').classList.add('sr-only'); }
+      }
+    });
+
+    // Inicio por teléfono (solicita OTP por SMS)
+    $('#form-phone').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const phone = $('#phone').value.trim();
+      if (!/^[+]?\d[\d\s-]{7,}$/.test(phone)) { showErr('#phone-err', 'Número no válido.'); return; }
+      showErr('#phone-err');
+
+      const btn = $('#btn-login-phone'); btn.disabled = true; btn.textContent = 'Enviando…';
+      try{
+        const res = await fetch('/api/auth/sms/start', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ phone }) });
+        const data = await res.json().catch(()=> ({}));
+        if (!res.ok){ showErr('#form-error-phone', data.message || 'No se pudo enviar el código.'); return; }
+        // Reusar modal 2FA para OTP de SMS
+        const dialog = $('#modal-2fa'); dialog.returnValue = '';
+        $('#t-2fa').textContent = 'Código SMS';
+        dialog.showModal();
+        const inputs = $$('.otp input', dialog); inputs.forEach(i=> i.value=''); inputs[0].focus();
+        $('#form-2fa').addEventListener('submit', async (ev) => {
+          ev.preventDefault();
+          const code = inputs.map(i => i.value).join('');
+          if (code.length !== 6) { showErr('#otp-error', 'Código incompleto.'); return; }
+          showErr('#otp-error');
+
+          const vRes = await fetch('/api/auth/sms/verify', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ phone, code }) });
+          const vData = await vRes.json().catch(()=> ({}));
+          if (!vRes.ok){ showErr('#otp-error', vData.message || 'Código inválido.'); return; }
+          dialog.close('ok');
+          window.location.assign(vData.redirect || '/dashboard');
+        }, { once:true });
+      }catch(err){
+        console.error(err); showErr('#form-error-phone', 'Error de red.');
+      }finally{
+        btn.disabled = false; btn.textContent = 'Enviar código';
+      }
+    });
+
+    // Botones de proveedores (placeholders)
+    $('#btn-google').addEventListener('click', ()=> window.location.assign('/api/auth/google'));
+    $('#btn-microsoft').addEventListener('click', ()=> window.location.assign('/api/auth/microsoft'));
+  </script>
+</body>
+</html>
